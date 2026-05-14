@@ -7,19 +7,75 @@ const app = {
     isProcessing: false,
     correctAnswer: null,
 
+    // 3D 캐러셀 관련
+    currentIndex: 0,
+    totalCards: 3,
+    angleUnit: 120, // 360 / totalCards
+
     init() {
         this.setupEventListeners();
+        this.updateCarousel();
     },
 
     setupEventListeners() {
-        window.addEventListener('keydown', (e) => this.handleInput(e, true));
+        window.addEventListener('keydown', (e) => {
+            if (this.currentScreen === 'main-menu') {
+                if (e.key === 'ArrowLeft') this.prevCard();
+                if (e.key === 'ArrowRight') this.nextCard();
+                if (e.key === 'Enter') {
+                    if (this.currentIndex === 0) this.startSimulator();
+                    else if (this.currentIndex === 1) this.startZeroGame();
+                }
+            }
+            this.handleInput(e, true);
+        });
         window.addEventListener('keyup', (e) => this.handleInput(e, false));
     },
 
-    // 화면 전환
+    // --- 캐러셀 제어 ---
+    updateCarousel() {
+        const carousel = document.getElementById('carousel');
+        const rotation = this.currentIndex * -this.angleUnit;
+        carousel.style.transform = `rotateY(${rotation}deg)`;
+
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            const angle = index * this.angleUnit;
+            // 각 카드를 원형으로 배치 (Z축으로 400px 밀기)
+            card.style.transform = `rotateY(${angle}deg) translateZ(400px)`;
+            
+            if (index === this.currentIndex) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        });
+    },
+
+    nextCard() {
+        this.currentIndex = (this.currentIndex + 1) % this.totalCards;
+        this.updateCarousel();
+    },
+
+    prevCard() {
+        this.currentIndex = (this.currentIndex - 1 + this.totalCards) % this.totalCards;
+        this.updateCarousel();
+    },
+
+    rotateTo(index) {
+        if (this.currentIndex === index) return;
+        this.currentIndex = index;
+        this.updateCarousel();
+    },
+
+    // --- 화면 전환 ---
     showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById(screenId).classList.remove('hidden');
+        document.getElementById(screenId).style.opacity = 0;
+        setTimeout(() => {
+            document.getElementById(screenId).style.opacity = 1;
+        }, 50);
         this.currentScreen = screenId;
     },
 
@@ -35,22 +91,25 @@ const app = {
         document.querySelectorAll('.game-ui').forEach(ui => ui.classList.add('hidden'));
     },
 
-    // --- 시뮬레이터 로직 ---
-    startSimulator() {
+    // --- 게임 시작 (event 추가로 카드 클릭 시 바로 시작 방지) ---
+    startSimulator(e) {
+        if (e) e.stopPropagation();
+        if (this.currentIndex !== 0) {
+            this.rotateTo(0);
+            return;
+        }
         this.stopGames();
         this.currentGame = 'simulator';
         this.showScreen('game-screen');
         document.getElementById('simulator-ui').classList.remove('hidden');
-        this.updateSimStatus('대기 중...');
     },
 
-    updateSimStatus(text) {
-        const el = document.getElementById('sim-status');
-        if (el) el.textContent = text;
-    },
-
-    // --- 제로 게임 로직 ---
-    startZeroGame() {
+    startZeroGame(e) {
+        if (e) e.stopPropagation();
+        if (this.currentIndex !== 1) {
+            this.rotateTo(1);
+            return;
+        }
         this.stopGames();
         this.currentGame = 'zero-game';
         this.score = 0;
@@ -60,6 +119,7 @@ const app = {
         this.nextQuestion();
     },
 
+    // --- 제로 게임 로직 ---
     nextQuestion() {
         if (this.currentGame !== 'zero-game') return;
         
@@ -74,7 +134,10 @@ const app = {
             { q: "물은 100도에서 끓는다?", a: "ArrowLeft" },
             { q: "고양이는 날 수 있다?", a: "ArrowRight" },
             { q: "여름은 춥다?", a: "ArrowRight" },
-            { q: "대한민국 수도는 서울?", a: "ArrowLeft" }
+            { q: "대한민국 수도는 서울?", a: "ArrowLeft" },
+            { q: "코끼리는 곤충이다?", a: "ArrowRight" },
+            { q: "바나나는 노란색?", a: "ArrowLeft" },
+            { q: "10 > 5?", a: "ArrowLeft" }
         ];
         
         const randomIdx = Math.floor(Math.random() * questions.length);
@@ -86,12 +149,12 @@ const app = {
 
         clearInterval(this.timer);
         this.timer = setInterval(() => {
-            this.timeLeft -= 2;
+            this.timeLeft -= 1.5; // 약간 더 느리게 조정
             this.updateTimerBar();
             if (this.timeLeft <= 0) {
-                this.handleZeroGameResult(false, "시간 초과!");
+                this.handleZeroGameResult(false, "TIMEOUT");
             }
-        }, 50);
+        }, 30);
     },
 
     updateTimerBar() {
@@ -109,7 +172,7 @@ const app = {
         feedback.className = 'feedback-text ' + (isCorrect ? 'correct' : 'wrong');
 
         if (isCorrect) {
-            this.score += 10;
+            this.score += 100; // XP 느낌으로 100점씩
             document.getElementById('zero-score').textContent = this.score;
         }
 
@@ -118,33 +181,34 @@ const app = {
         }, 1000);
     },
 
-    // --- 공통 입력 처리 ---
+    // --- 입력 처리 ---
     handleInput(e, isDown) {
         if (this.currentGame === 'simulator') {
             const handId = e.key === 'ArrowLeft' ? 'sim-left' : (e.key === 'ArrowRight' ? 'sim-right' : null);
             if (handId) {
                 const el = document.getElementById(handId);
+                const statusEl = document.getElementById('sim-status');
                 if (isDown) {
                     el.classList.add('active');
-                    this.updateSimStatus(e.key === 'ArrowLeft' ? '왼손 (Yes) 들기!' : '오른손 (No) 들기!');
+                    statusEl.textContent = e.key === 'ArrowLeft' ? 'LEFT HAND ACTIVATED' : 'RIGHT HAND ACTIVATED';
                 } else {
                     el.classList.remove('active');
-                    this.updateSimStatus('대기 중...');
+                    statusEl.textContent = 'SYSTEM READY';
                 }
             }
         } 
         else if (this.currentGame === 'zero-game' && isDown && !this.isProcessing) {
-            const leftHand = document.getElementById('zero-left');
-            const rightHand = document.getElementById('zero-right');
-
-            if (e.key === 'ArrowLeft') {
-                leftHand.classList.add('active');
-                setTimeout(() => leftHand.classList.remove('active'), 200);
-                this.handleZeroGameResult(this.correctAnswer === 'ArrowLeft', "딩동댕!");
-            } else if (e.key === 'ArrowRight') {
-                rightHand.classList.add('active');
-                setTimeout(() => rightHand.classList.remove('active'), 200);
-                this.handleZeroGameResult(this.correctAnswer === 'ArrowRight', "딩동댕!");
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                const handId = e.key === 'ArrowLeft' ? 'zero-left' : 'zero-right';
+                const el = document.getElementById(handId);
+                el.classList.add('active');
+                setTimeout(() => el.classList.remove('active'), 150);
+                
+                if (e.key === this.correctAnswer) {
+                    this.handleZeroGameResult(true, "CONFIRMED");
+                } else {
+                    this.handleZeroGameResult(false, "ERROR");
+                }
             }
         }
     }

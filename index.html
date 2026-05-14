@@ -3,73 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EEG MI Games</title>
+    <title>EEG Brain Hub</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
+        <!-- 배경 효과 -->
+        <div class="bg-glow"></div>
+        
         <!-- 메인 메뉴 화면 -->
         <div id="main-menu" class="screen">
-            <h1>EEG Brain Games</h1>
-            <p class="subtitle">모터 이메지너리 훈련 및 게임</p>
+            <header>
+                <h1>EEG BRAIN HUB</h1>
+                <p class="tagline">Neural Interface Training System</p>
+            </header>
             
-            <div class="slider-container">
-                <div class="slider">
-                    <div class="card" onclick="app.startSimulator()">
-                        <div class="card-icon">🤚</div>
-                        <h2>기본 시뮬레이터</h2>
-                        <p>왼손/오른손 들기 시각화 테스트</p>
+            <div class="carousel-viewport">
+                <div id="carousel" class="carousel">
+                    <!-- 카드는 JS에서 동적으로 위치가 계산됩니다 -->
+                    <div class="card" onclick="app.rotateTo(0)">
+                        <div class="card-content">
+                            <div class="card-icon">🤚</div>
+                            <h2>시뮬레이터</h2>
+                            <button class="start-btn" onclick="app.startSimulator(event)">START</button>
+                        </div>
                     </div>
-                    <div class="card" onclick="app.startZeroGame()">
-                        <div class="card-icon">⚡</div>
-                        <h2>제로 게임 (O/X)</h2>
-                        <p>왼손(Yes) / 오른손(No) 순발력 퀴즈</p>
+                    <div class="card" onclick="app.rotateTo(1)">
+                        <div class="card-content">
+                            <div class="card-icon">⚡</div>
+                            <h2>제로 게임</h2>
+                            <button class="start-btn" onclick="app.startZeroGame(event)">START</button>
+                        </div>
                     </div>
-                    <div class="card disabled">
-                        <div class="card-icon">🏃</div>
-                        <h2>좌우 피하기</h2>
-                        <p>Coming Soon...</p>
+                    <div class="card disabled" onclick="app.rotateTo(2)">
+                        <div class="card-content">
+                            <div class="card-icon">🔒</div>
+                            <h2>준비 중...</h2>
+                            <button class="start-btn" disabled>LOCKED</button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <p class="instruction">카드를 클릭하여 게임을 시작하세요</p>
+
+            <div class="nav-controls">
+                <button class="nav-btn" onclick="app.prevCard()">PREV</button>
+                <button class="nav-btn" onclick="app.nextCard()">NEXT</button>
+            </div>
+            
+            <p class="instruction-hint">방향키 ⬅️ ➡️ 로 회전, ENTER로 시작</p>
         </div>
 
         <!-- 게임 실행 화면 -->
         <div id="game-screen" class="screen hidden">
-            <button class="back-btn" onclick="app.goHome()">← 홈으로</button>
+            <button class="back-btn" onclick="app.goHome()">← EXIT SYSTEM</button>
             
-            <!-- 시뮬레이터 레이아웃 -->
             <div id="simulator-ui" class="game-ui hidden">
-                <h2>EEG Motor Imagery Simulator</h2>
+                <h2 class="game-title">NEURAL SIMULATOR</h2>
                 <div class="visualizer">
                     <div id="sim-left" class="hand">
                         <span class="emoji">🤚</span>
-                        <span class="label">Left (Yes)</span>
+                        <span class="label">LEFT (YES)</span>
                     </div>
                     <div id="sim-right" class="hand">
                         <span class="emoji">🤚</span>
-                        <span class="label">Right (No)</span>
+                        <span class="label">RIGHT (NO)</span>
                     </div>
                 </div>
-                <div id="sim-status" class="status-box">대기 중...</div>
+                <div id="sim-status" class="status-box">SYSTEM READY</div>
             </div>
 
-            <!-- 제로 게임 레이아웃 -->
             <div id="zero-game-ui" class="game-ui hidden">
                 <div class="game-header">
-                    <div class="score">Score: <span id="zero-score">0</span></div>
+                    <div class="score">XP: <span id="zero-score">0</span></div>
                     <div class="timer"><div id="timer-bar"></div></div>
                 </div>
-                <div id="zero-question" class="question-box">준비!</div>
+                <div id="zero-question" class="question-box">INITIALIZING...</div>
                 <div class="zero-visualizer">
                     <div id="zero-left" class="hand-small">
                         <span class="emoji-small">🤚</span>
-                        <span class="label-small">Left (Yes)</span>
+                        <span class="label-small">YES</span>
                     </div>
                     <div id="zero-right" class="hand-small">
                         <span class="emoji-small">🤚</span>
-                        <span class="label-small">Right (No)</span>
+                        <span class="label-small">NO</span>
                     </div>
                 </div>
                 <div id="zero-feedback" class="feedback-text"></div>
