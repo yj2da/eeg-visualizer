@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEG MI Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>EEG Motor Imagery Simulator</h1>
+        <p class="instruction">방향키 ⬅️ (왼손) / ➡️ (오른손)를 눌러보세요.</p>
+        
+        <div class="visualizer">
+            <div id="left-hand" class="hand">
+                <span class="emoji">🤚</span>
+                <span class="label">Left (Yes)</span>
+            </div>
+            <div id="right-hand" class="hand">
+                <span class="emoji">🤚</span>
+                <span class="label">Right (No)</span>
+            </div>
+        </div>
+
+        <div id="status" class="status-box">
+            준비 중...
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
