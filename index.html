@@ -35,11 +35,11 @@
                             <button class="start-btn" onclick="app.startZeroGame(event)">START</button>
                         </div>
                     </div>
-                    <div class="card disabled" onclick="app.rotateTo(2)">
+                    <div class="card" onclick="app.rotateTo(2)">
                         <div class="card-content">
-                            <div class="card-icon">🔒</div>
-                            <h2>준비 중...</h2>
-                            <button class="start-btn" disabled>LOCKED</button>
+                            <div class="card-icon">🏃</div>
+                            <h2>좌우 피하기</h2>
+                            <button class="start-btn" onclick="app.startDodgeGame(event)">START</button>
                         </div>
                     </div>
                 </div>
@@ -57,6 +57,7 @@
         <div id="game-screen" class="screen hidden">
             <button class="back-btn" onclick="app.goHome()">← EXIT SYSTEM</button>
             
+            <!-- 시뮬레이터 -->
             <div id="simulator-ui" class="game-ui hidden">
                 <h2 class="game-title">NEURAL SIMULATOR</h2>
                 <div class="visualizer">
@@ -72,6 +73,7 @@
                 <div id="sim-status" class="status-box">SYSTEM READY</div>
             </div>
 
+            <!-- 제로 게임 -->
             <div id="zero-game-ui" class="game-ui hidden">
                 <div class="game-header">
                     <div class="score">XP: <span id="zero-score">0</span></div>
@@ -89,6 +91,18 @@
                     </div>
                 </div>
                 <div id="zero-feedback" class="feedback-text"></div>
+            </div>
+
+            <!-- 좌우 피하기 -->
+            <div id="dodge-game-ui" class="game-ui hidden">
+                <h2 class="game-title">NEURAL DODGE</h2>
+                <div class="game-header">
+                    <div class="score">XP: <span id="dodge-score">0</span></div>
+                </div>
+                <div id="dodge-board" class="dodge-board">
+                    <div id="dodge-player" class="dodge-player">🤚</div>
+                </div>
+                <div id="dodge-message" class="dodge-message">SYSTEM ACTIVE</div>
             </div>
         </div>
     </div>
